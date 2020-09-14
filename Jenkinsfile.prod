@@ -1,0 +1,45 @@
+library identifier: 'yanolja-pipeline-library', changelog: false
+
+def meta = publishMeta(
+    awsProfile: 'lq',
+    yanoljaProfile: 'prod',
+    applicationName: 'lqt-front-config',
+    environmentName: 'lqt-front-config-prod',
+    applicationPath: '.',
+    targetFile: '.docker/version.zip',
+    dockerNamespace: 'lqt',
+    dockerFilePath: '.docker/Dockerfile',
+    phase: 'prod',
+    kafkaEnv: 'prod'
+)
+publishAppPipeline meta: meta,
+        timeoutMin: 10, {
+    packageNode meta: meta, nodeVersion:10, {
+        sh "rm -f ${meta.applicationPath}/.docker/version.zip"
+        sh "bash ${meta.applicationPath}/.docker/filebeat.sh ${meta.applicationPath}/.docker/ebextensions/02_filebeat.config ${meta.kafkaEnv}"
+        sh "bash ${meta.applicationPath}/.docker/generate-dockerrun.sh ${meta.applicationName} ${meta.version} ${meta.phase} 2560 256"
+        sh "bash ${meta.applicationPath}/.docker/generate-version.sh"
+        zip zipFile: "${meta.applicationPath}/.docker/version.zip", dir: "${meta.applicationPath}/.docker/dist", glob: "**/*"
+        sh "npm install"
+        sh "npm run test"
+        sh "npm run build"
+        publishHTML (target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'coverage/lcov-report',
+            reportFiles: 'index.html',
+            reportName: 'coverage-report'
+        ])
+        publishHTML (target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'coverage',
+            reportFiles: 'test-report.html',
+            reportName: 'test-report'
+        ])
+    }
+    publishDocker meta: meta
+}
+

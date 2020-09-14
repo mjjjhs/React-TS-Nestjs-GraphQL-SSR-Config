@@ -1,0 +1,4 @@
+scalar Result
+
+type Query
+type Mutation

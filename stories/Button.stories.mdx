@@ -1,0 +1,27 @@
+import { Title, Subtitle, Meta, Story, Preview, Props, Source } from '@storybook/addon-docs/blocks';
+import Button from '../client/components/Button';
+import { withKnobs, boolean, color, number, object, text, select } from '@storybook/addon-knobs';
+
+<Meta title="components/Button" component={Button} decorators={[withKnobs]} />
+
+<Title>Button</Title>
+
+<Subtitle>Button Component</Subtitle>
+
+## default
+<Preview>
+    <Story name="default">
+        <>
+            <dl>
+                <dt>Default</dt>
+                <div>
+                    <Button text={text('buttonText', 'Click Me')}/>
+                </div>
+            </dl>
+        </>
+    </Story>
+</Preview>
+
+### Button props
+
+<Props of={Button}/>
